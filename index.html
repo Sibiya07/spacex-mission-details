@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpaceX Mission Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #3498db;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+        }
+        .container {
+    width: 60%;  
+    margin: 20px auto;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    text-align: center;  
+}
+
+        select, button {
+            padding: 10px;
+            font-size: 16px;
+            margin: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .mission-details {
+            margin-top: 20px;
+            background-color: #fafafa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .mission-details h3 {
+            margin-bottom: 10px;
+        }
+        .mission-details p {
+            margin: 5px 0;
+        }
+        .mission-details img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<header>SpaceX Mission Details</header>
+
+<div class="container">
+    <h2>Select a SpaceX Mission</h2>
+    <select id="mission-select">
+        <option value="">Select a mission</option>
+    </select>
+    <button id="submit-btn">Get Mission Details</button>
+
+    <div class="mission-details" id="mission-details"></div>
+</div>
+
+<script>
+    const apiURL = "https://api.spacexdata.com/v4/launches";
+    const missionSelect = document.getElementById('mission-select');
+    const submitBtn = document.getElementById('submit-btn');
+    const missionDetails = document.getElementById('mission-details');
+
+    // Fetch mission data and populate dropdown
+    fetch(apiURL)
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(mission => {
+                const option = document.createElement('option');
+                option.value = mission.id;
+                option.textContent = mission.name;
+                missionSelect.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error("Error fetching mission data:", error);
+        });
+
+   
+    submitBtn.addEventListener('click', () => {
+        const selectedMissionId = missionSelect.value;
+
+        if (selectedMissionId) {
+            fetch(`${apiURL}/${selectedMissionId}`)
+                .then(response => response.json())
+                .then(data => {
+                    missionDetails.innerHTML = `
+                        <h3>${data.name}</h3>
+                        <p><strong>Date:</strong> ${new Date(data.date_utc).toLocaleString()}</p>
+                        <p><strong>Details:</strong> ${data.details || 'No details available.'}</p>
+                        <p><strong>Rocket:</strong> ${data.rocket.name}</p>
+                        <p><strong>Launchpad:</strong> ${data.launchpad.name}</p>
+                        <p><strong>Success:</strong> ${data.success ? 'Yes' : 'No'}</p>
+                        <p><strong>Links:</strong> <a href="${data.links.webcast}" target="_blank">Webcast</a> | <a href="${data.links.article}" target="_blank">Article</a></p>
+                        <img src="${data.links.patch.small}" alt="Mission Patch">
+                    `;
+                })
+                .catch(error => {
+                    console.error("Error fetching mission details:", error);
+                });
+        } else {
+            alert("Please select a mission.");
+        }
+    });
+</script>
+
+</body>
+</html>
